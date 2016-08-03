@@ -31,8 +31,17 @@
 
 
 
+
+
+## 实现
+
+
+### 懒汉，线程不安全
+
+
 ```
-/懒汉,线程不安全
+
+//懒汉,线程不安全
 class ManagerA{
 
     private static ManagerA instance;
@@ -46,6 +55,17 @@ class ManagerA{
         return instance;
     }
 }
+
+
+```
+
+简洁明了，但是不能在多线程下工作。
+
+
+### 懒汉，线程安全
+
+```java
+
 //懒汉,线程安全
 class ManagerB{
 
@@ -60,6 +80,18 @@ class ManagerB{
         return instance;
     }
 }
+
+```
+
+线程安全，但是因为加锁，效率太低，大多数情况不需要同步。
+
+
+
+### 双重检验锁
+
+
+```java
+
 //双重检验锁
 class ManagerC{
     private static volatile ManagerC instance;
@@ -67,12 +99,49 @@ class ManagerC{
     public static ManagerC getInstance(){
         if(instance==null){
             synchronized (ManagerC.class){
-                instance=new ManagerC();
+                if(instance==null){
+                    instance=new ManagerC();
+                }
             }
         }
         return instance;
     }
 }
+
+
+```
+
+看起来没什么问题，但是Java指令中创建对象和赋值操作是分开进行的，也就是说instance = new Singleton();语句是分两步执行的。但是JVM并不保证这两个操作的先后顺序，也就是说有可能JVM会为新的Singleton实例分配空间，然后直接赋值给instance成员，然后再去初始化这个Singleton实例。这样就可能出错了
+
+
+### 创建同步
+
+
+```java
+
+class ManagerG{
+    private ManagerG(){}
+    public static ManagerG instance;
+    public  synchronized static void syncInit(){
+        instance=new ManagerG();
+    }
+    public static ManagerG getInstance(){
+        if(instance==null){
+            syncInit();
+        }
+        return instance;
+    }
+}
+
+```
+也有人这样实现：因为我们只需要在创建类的时候进行同步，所以只要将创建和getInstance()分开，单独为创建加synchronized关键字.考虑性能的话，整个程序只需创建一次实例，所以性能也不会有什么影响
+
+
+### 饿汉
+
+
+```java
+
 //饿汉式
 class ManagerD{
     private static final ManagerD instance=new ManagerD();
@@ -83,6 +152,17 @@ class ManagerD{
         return instance;
     }
 }
+
+
+```
+
+instance 在类加载时就实例化，类加载的原因可能有很多，但是可能由于加载过慢，需要用到的时候才想进行加载。
+
+### 静态内部类
+
+
+```java
+
 //静态内部类
 class ManagerE{
 
@@ -97,6 +177,17 @@ class ManagerE{
     }
 
 }
+```
+
+
+把实例放在静态内部类里，只有第一次用到getInstance()方法的时候，会触发静态内部类ManagerEHolder 的类加载，JVM内部的机制能够保证当一个类被加载的时候，这个类的加载过程是线程互斥的。这样当我们第一次调用getInstance的时候，JVM能够帮我们保证instance只被创建一次，并且会保证把赋值给instance的内存初始化完毕，
+
+
+### 枚举
+
+```java
+
+
 enum ManagerF{
     INSTANCE;
     public static ManagerF getInstance(){
@@ -107,16 +198,7 @@ enum ManagerF{
     }
 }
 
-public class SingletonDemo {
-    public static void main(String []args){
-        ManagerA managerA=ManagerA.getInstance();
-        ManagerB managerB=ManagerB.getInstance();
-        ManagerC managerC=ManagerC.getInstance();
-        ManagerD managerD=ManagerD.getInstance();
-        ManagerE managerE=ManagerE.getInstance();
-        ManagerF managerF=ManagerF.INSTANCE;
-    }
-}
+````
 
+这种方式是Effective Java作者Josh Bloch 提倡的方式，它不仅能避免多线程同步问题，而且还能防止反序列化重新创建新的对象
 
-```

@@ -41,7 +41,9 @@ class ManagerC{
     public static ManagerC getInstance(){
         if(instance==null){
             synchronized (ManagerC.class){
-                instance=new ManagerC();
+                if(instance==null){
+                    instance=new ManagerC();
+                }
             }
         }
         return instance;
@@ -78,6 +80,19 @@ enum ManagerF{
     }
     private ManagerF(){
 
+    }
+}
+class ManagerG{
+    private ManagerG(){}
+    public static ManagerG instance;
+    public  synchronized static void syncInit(){
+        instance=new ManagerG();
+    }
+    public static ManagerG getInstance(){
+        if(instance==null){
+            syncInit();
+        }
+        return instance;
     }
 }
 
