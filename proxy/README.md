@@ -81,6 +81,18 @@
 - 在传统的代理模式中，客户端通过Proxy调用RealSubject类的request()方法，同时还在代理类中封装了其他方法(如preRequest()和postRequest())，可以处理一些其他问题。
 - 如果按照这种方法使用代理模式，那么真实主题角色必须是事先已经存在的，并将其作为代理对象的内部成员属性。如果一个真实主题角色必须对应一个代理主题角色，这将导致系统中的类个数急剧增加，因此需要想办法减少系统中类的个数，此外，如何在事先不知道真实主题角色的情况下使用代理主题角色，这都是动态代理需要解决的问题。
 
+
+
+### 与其它模式关联
+
+- 代理模式（Proxy Pattern），为其它对象提供一种代理以控制对这个对象的访问。
+- 装饰模式（Decorator Pattern），动态地给一个对象添加一些额外的职责。
+
+- 从语意上讲，代理模式是为控制对被代理对象的访问，而装饰模式是为了增加被装饰对象的功能
+- 代理类所能代理的类完全由代理类确定，装饰类装饰的对象需要根据实际使用时客户端的组合来确定
+- 被代理对象由代理对象创建，客户端甚至不需要知道被代理类的存在；被装饰对象由客户端创建并传给装饰对象
+
+
 ```java
 
 interface Runnable{
@@ -101,23 +113,23 @@ class ComputerProxy implements Runnable{
         this.computer = new Computer();
     }
 
-    void before(){
-        System.out.println("运行检查..");
+    boolean check() {
+        Random random = new Random();
+        return random.nextInt()>100;
     }
 
     @Override
     public void run() {
-        before();
-        computer.run();
-        after();
+        if(check()){
+            System.out.println("验证成功..");
+            computer.run();
+        }else{
+            System.out.println("验证失败");
+        }
+
     }
 
-    void after(){
-        System.out.println("保存数据..");
-
-    }
 }
-
 public class ProxyDemo {
 
     public static void main(String []args){

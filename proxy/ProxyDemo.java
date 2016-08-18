@@ -1,5 +1,7 @@
 package proxy;
 
+import java.util.Random;
+
 /**
  * Created by yzr on 16/8/18.
  */
@@ -24,21 +26,23 @@ class ComputerProxy implements Runnable{
         this.computer = new Computer();
     }
 
-    void before(){
-        System.out.println("运行检查..");
+    boolean check() {
+        Random random = new Random();
+        return random.nextInt()>100;
     }
 
     @Override
     public void run() {
-        before();
-        computer.run();
-        after();
+        if(check()){
+            System.out.println("验证成功..");
+            computer.run();
+        }else{
+            System.out.println("验证失败");
+        }
+
     }
 
-    void after(){
-        System.out.println("保存数据..");
 
-    }
 }
 
 public class ProxyDemo {
