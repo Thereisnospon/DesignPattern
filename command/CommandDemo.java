@@ -4,6 +4,13 @@ package command;
  * Created by yzr on 16/5/19.
  */
 
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Receiver
+ */
 class  Tv{
     public void turnUp(){
         System.out.println("turn up");
@@ -13,11 +20,16 @@ class  Tv{
     }
 }
 
-
+/**
+ * Command
+ */
 interface Command{
-    public  void execute();
+    void execute();
 }
 
+/**
+ * Concreate Command 1
+ */
 class  TurnUpCommand implements  Command{
     Tv mTv;
     TurnUpCommand(Tv tv){
@@ -30,6 +42,9 @@ class  TurnUpCommand implements  Command{
     }
 }
 
+/**
+ * Concreate Command 2
+ */
 class TurnDownCommand implements Command{
     Tv mTv;
     TurnDownCommand(Tv tv){
@@ -43,7 +58,9 @@ class TurnDownCommand implements Command{
 }
 
 
-
+/**
+ * Invoker
+ */
 class  KeyPad
 {
     Command turnDownCommand;
@@ -68,9 +85,56 @@ class  KeyPad
 }
 
 
-class  People {
+/**
+ * 宏命令
+ */
+interface MacroCommand extends Command{
+    void add(Command command);
+    void remove(Command command);
+}
 
-    People(){
+
+class TvMacroCommand implements MacroCommand{
+
+    List<Command>commands=new ArrayList<>();
+
+    @Override
+    public void add(Command command) {
+        commands.add(command);
+    }
+
+    @Override
+    public void remove(Command command) {
+        commands.remove(command);
+    }
+
+    @Override
+    public void execute() {
+        for(Command cmd:commands){
+            cmd.execute();
+        }
+    }
+}
+
+class Invoker{
+    Command command;
+    Invoker(Command command){
+        this.command=command;
+    }
+    public void invoke(){
+        command.execute();
+    }
+}
+
+
+
+/**
+ * Client
+ */
+
+public class CommandDemo {
+
+    public static void main(String []args){
         Tv tv=new Tv();
         Command turnDownComand=new TurnDownCommand(tv);
         Command turnUpCommand=new TurnUpCommand(tv);
@@ -82,15 +146,15 @@ class  People {
         keyPad.turnUp();
         keyPad.turnDown();
 
-    }
 
-}
 
-public class CommandDemo {
 
-    public static void main(String []args){
+        TvMacroCommand macroCommand=new TvMacroCommand();
+        macroCommand.add(turnUpCommand);
+        macroCommand.add(turnDownComand);
+        Invoker invoker=new Invoker(macroCommand);
 
-        System.out.print(Integer.toHexString(120));
+        invoker.invoke();
     }
 
 }
